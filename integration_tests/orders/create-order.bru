@@ -1,0 +1,22 @@
+meta {
+  name: Create order
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/orders
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+script:after-response {
+  const data = res.getBody()
+  if (data && data.id) {
+    bru.setVar("orderId", data.id)
+  }
+}

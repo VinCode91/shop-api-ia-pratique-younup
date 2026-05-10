@@ -1,0 +1,27 @@
+meta {
+  name: Create product
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/products
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Casque audio",
+    "description": "Casque sans fil à réduction de bruit",
+    "price": 199.99,
+    "stock": 15
+  }
+}
+
+script:after-response {
+  const data = res.getBody()
+  if (data && data.id) {
+    bru.setVar("productId", data.id)
+  }
+}
