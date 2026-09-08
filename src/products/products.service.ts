@@ -57,4 +57,10 @@ export class ProductsService {
       where: { stock: { gt: 0 } },
     });
   }
+
+  async findByPriceRange(min: number, max: number) {
+    return this.prisma.product.findMany({
+      where: { price: { gte: min, lte: max } },
+    });
+  }
 }
