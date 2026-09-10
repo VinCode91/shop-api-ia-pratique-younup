@@ -27,7 +27,6 @@ export class OrdersService {
       include: { items: { include: { product: true } } },
     });
 
-    // DETTE: Error générique au lieu de NotFoundException
     if (!order) {
       throw new Error(`commande introuvable`);
     }
@@ -51,8 +50,7 @@ export class OrdersService {
 
     const product = await this.ProductsService.findOne(dto.productId);
 
-    // BUG INTENTIONNEL: le total est mal calculé
-    // quantity est ignoré — on ajoute unitPrice au lieu de quantity * unitPrice
+
     const newTotal = order.total + product.price;
 
     const updatedOrder = await this.prisma.order.update({
@@ -91,6 +89,32 @@ export class OrdersService {
     });
   }
 
+  async applyDiscount(orderId: string, discountPercent: number) {
+    if (
+      !Number.isFinite(discountPercent) ||
+      discountPercent < 0 ||
+      discountPercent > 100
+    ) {
+      throw new Error("La remise doit être comprise entre 0 et 100");
+    }
+
+    const order = await this.getOrderById(orderId);
+
+    if (order.status !== "PENDING") {
+      throw new Error(
+        "Seules les commandes en attente peuvent recevoir une remise",
+      );
+    }
+
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        total: order.total * (1 - discountPercent / 100),
+      },
+      include: { items: { include: { product: true } } },
+    });
+  }
+
   async cancelOrder(id: string) {
     const order = await this.getOrderById(id);
 
@@ -109,8 +133,6 @@ export class OrdersService {
     });
   }
 
-  // DEAD CODE: jamais appelée depuis aucun controller
-  // calcul incorrect: divise par 100 au lieu de multiplier
   calculateDiscount(total: number, discountPercent: number): number {
     return total / (discountPercent / 100);
   }

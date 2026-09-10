@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
 } from "@nestjs/common";
 import { ProductsService } from "./products.service";
 import { CreateProductDto } from "./dto/create-product.dto";
@@ -23,6 +24,11 @@ export class ProductsController {
   @Get("in-stock")
   findInStock() {
     return this.productsService.findInStock();
+  }
+
+  @Get("search")
+  search(@Query("q") q?: string) {
+    return this.productsService.search(q);
   }
 
   @Get(":id")

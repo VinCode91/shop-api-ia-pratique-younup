@@ -58,6 +58,17 @@ export class ProductsService {
     });
   }
 
+  async search(q?: string) {
+    if (!q) {
+      return this.findAll();
+    }
+
+    return this.prisma.product.findMany({
+      where: { name: { contains: q } },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
   async findByPriceRange(min: number, max: number) {
     return this.prisma.product.findMany({
       where: { price: { gte: min, lte: max } },
